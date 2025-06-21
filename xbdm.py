@@ -385,6 +385,11 @@ class XBDMClient:
             
             # Trim leading and trailing whitespace
             response = response.strip()
+
+            #HotFix: Check if JRPC is loaded.
+            # This is probs not the best check but sure
+            if response == 'DEBUGGING':
+                response = 'ERROR: JRPC2.xex may not be loaded'
             
             return response, status
         
@@ -1615,7 +1620,9 @@ class XBDMClient:
         '''
             Gets temperature from the console in c
 
-            Returns: an int of the temp in c
+            Returns: 
+                An int of the temp in c
+                If the int that was retuned is 0. Please make sure the JRPC plugin is loaded
             Usage:
                 xbdm.get_Temp("CPU") # Processor
                 xbdm.get_Temp("GPU") # Graphics
@@ -1637,7 +1644,7 @@ class XBDMClient:
             setType = 0 # Set default if no or invalid type is set.
 
         response, status = self.send_command(f"consolefeatures ver=2 type=15 params=\"A\\0\\A\\1\\1\\{setType}\\\"")
-        if status == ResponseStatus.OK:
+        if status == ResponseStatus.OK and response != 'ERROR: JRPC2.xex may not be loaded':
             return int(response[response.find(" ") + 1:], 16) # Decode hex to int
         else:
             return 0
